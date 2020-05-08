@@ -15,6 +15,8 @@ import sys     # max float
 
 # -----------------------------------
 
+# Neuroevolution of FNN using 1. Real Coded Genetic Alg (G3PCX) and 2. PSO for classification problems
+
 
 
 
@@ -248,7 +250,7 @@ class neuroevolution(object):  # class for fitness func
 
 
 
-class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 
+class evolutionRCGA(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 (Real coded Genetic Alg)
 	def __init__(self, pop_size, dimen, max_evals,  max_limits, min_limits, netw, traindata, testdata):
 		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
 
@@ -282,7 +284,7 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 	
 
 	def rand_normal(self, mean, stddev):
-		if (not evolution.n2_cached):
+		if (not evolutionRCGA.n2_cached):
 			#choose a point x,y in the unit circle uniformly at random
 			x = np.random.uniform(-1,1,1)
 			y = np.random.uniform(-1,1,1)
@@ -294,14 +296,14 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 			# Apply Box-Muller transform on x, y
 			d = np.sqrt(-2.0*np.log(r)/r)
 			n1 = x*d
-			evolution.n2 = y*d
+			evolutionRCGA.n2 = y*d
 			# scale and translate to get desired mean and standard deviation
 			result = n1*stddev + mean
-			evolution.n2_cached = True
+			evolutionRCGA.n2_cached = True
 			return result
 		else:
-			evolution.n2_cached = False
-			return evolution.n2*stddev + mean
+			evolutionRCGA.n2_cached = False
+			return evolutionRCGA.n2*stddev + mean
 
 	def evaluate(self):
 
@@ -369,8 +371,8 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 		for i in range(1, self.num_parents):
 			D_not += D[i]
 		D_not /= (self.num_parents - 1) # this is the average of the perpendicular distances from all other parents (minus the index parent) to the index vector
-		evolution.n2 = 0.0
-		evolution.n2_cached = False
+		evolutionRCGA.n2 = 0.0
+		evolutionRCGA.n2_cached = False
 		for i in range(self.dimen):
 			tempar1[i] = self.rand_normal(0,  self.sigma_eta * D_not) #rand_normal(0, D_not * sigma_eta);
 			tempar2[i] = tempar1[i]
@@ -464,15 +466,8 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 			self.temp_index[index]=self.temp_index[i]
 			self.temp_index[i]=swp
 
-	def evolveG3PCX(self, outfile   ):
-		#np.savetxt(outfile, self.population, fmt = '%1.2f' )
+	def evolveG3PCX(self): 
 
- 
-
-		#pop = np.loadtxt("pop.txt" )
-		#genIndex = np.loadtxt("out3.txt" )
-		#mom = np.loadtxt("out2.txt" )
-		#self.population = pop
 		tempfit = 0
 		prevfitness = 99
 		self.evaluate()
@@ -505,11 +500,7 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 
 
 				print(self.fitness[self.best_index], ' fitness')
-				print(self.num_evals, 'num of evals\n\n\n')
-			np.savetxt(outfile, [ self.num_evals, self.best_index, self.best_fit], fmt='%1.5f', newline="\n")
-		print(self.sub_pop, '  sub_pop')
-		#print(self.population[self.best_index], ' best sol'   )              
-		print(self.fitness[self.best_index], ' fitness')
+				print(self.num_evals, 'num of evals\n\n\n') 
 
 
 		train_per, rmse_train = self.classification_perf(self.population[self.best_index], 'train')
@@ -523,7 +514,7 @@ class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 
  
 
-class Particle(neuroevolution):
+class particle(neuroevolution):
 	def __init__(self,  dim,  maxx, minx, netw, traindata, testdata):
 		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
 
@@ -536,7 +527,7 @@ class Particle(neuroevolution):
 
 
 
-class pso(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 
+class evolutionPSO(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 
 	def __init__(self, pop_size, dimen, max_evals,  max_limits, min_limits, netw, traindata, testdata):
 		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
 
@@ -558,7 +549,7 @@ class pso(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 		rnd = random.Random(0)
 		# create n random particles 
 
-		swarm = [Particle(self.dim, self.minx, self.maxx,  self.netw, self.traindata, self.testdata) for i in range(self.n)] 
+		swarm = [particle(self.dim, self.minx, self.maxx,  self.netw, self.traindata, self.testdata) for i in range(self.n)] 
 	 
 		best_swarm_pos = [0.0 for i in range(self.dim)] # not necess.
 		best_swarm_err = sys.float_info.max # swarm best
@@ -631,7 +622,7 @@ class pso(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 def main():
 
 
-	problem = 4
+	problem = 7
 
 
 	separate_flag = False # dont change 
@@ -752,30 +743,30 @@ def main():
 	y_train =  traindata[:,netw[0]]
 
 
-	outfile=open('pop_.txt','w')
+	outfile=open('results.txt','w')
  
  
 	random.seed(time.time())
-	max_evals = 50000 
+	max_evals = 10000 
 	pop_size =  100
 	num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
 	max_limits = np.repeat(50, num_varibles) 
 	min_limits = np.repeat(-50, num_varibles)
 
 
-	g3pcx  = evolution(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
+	g3pcx  = evolutionRCGA(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
 	 
-	train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX(outfile)
+	train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX()
 
 	print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
 	print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
 
 
-	max_gens = 1000
-	pop_size =  50
+	max_gens = 100
+	pop_size =  100
 
  
-	psonn  = pso(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
+	psonn  =  evolutionPSO(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
  
 	train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
 
