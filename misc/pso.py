@@ -53,6 +53,8 @@ def Solve(max_epochs, n, dim, minx, maxx):
   best_swarm_pos = [0.0 for i in range(dim)] # not necess.
   best_swarm_err = sys.float_info.max # swarm best
   for i in range(n): # check each particle
+
+    print(i, swarm[i].position, n, '  swarm[i].position')
     if swarm[i].error < best_swarm_err:
       best_swarm_err = swarm[i].error
       best_swarm_pos = copy.copy(swarm[i].position) 
@@ -63,6 +65,7 @@ def Solve(max_epochs, n, dim, minx, maxx):
   c2 = 1.49445 # social (swarm)
 
   while epoch < max_epochs:
+
     
     if epoch % 10 == 0 and epoch > 1:
       print("Epoch = " + str(epoch) +
@@ -117,8 +120,8 @@ for i in range(dim-1):
   print("0, ", end="")
 print("0)")
 
-num_particles = 100
-max_epochs = 4000
+num_particles = 10
+max_epochs = 1
 
 print("Setting num_particles = " + str(num_particles))
 print("Setting max_epochs    = " + str(max_epochs))

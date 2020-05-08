@@ -9,6 +9,13 @@ import os
 import shutil
 
 
+  
+import copy    # array-copying convenience
+import sys     # max float
+
+# -----------------------------------
+
+
 
 
 class neuralnetwork:
@@ -25,8 +32,7 @@ class neuralnetwork:
 		self.hidout = np.zeros((1, self.Top[1]))  # output of first hidden layer
 		self.out = np.zeros((1, self.Top[2]))  # output last layer
 		self.pred_class = 0
-
-		print( ' network set ')
+ 
 
 	def sigmoid(self, x):
 		return 1 / (1 + np.exp(-x))
@@ -168,7 +174,7 @@ class neuroevolution(object):  # class for fitness func
 
 
 		learn_rate = 0.1 # in case you wish to use gradients to help evolution
-		self.neural_net = neuralnetwork(netw, traindata, testdata, learn_rate)
+		self.neural_net = neuralnetwork(netw, traindata, testdata, learn_rate)  # FNN model, but can be extended to RNN model
 		self.traindata = traindata
 		self.testdata = testdata
 		self.topology = netw
@@ -198,13 +204,12 @@ class neuroevolution(object):  # class for fitness func
 		y = data[:, self.topology[0]]
 		fx, prob = self.neural_net.evaluate_proposal(data,x)
 		fit= self.rmse(fx,y) 
-		acc = self.accuracy(fx,y)
-		print(fx, ' fx')
+		acc = self.accuracy(fx,y) 
 
 		return acc, fit
 
 		
-	def fit_func(self, x):    #  function  (can be any other function, model or even a neural network)
+	def fit_func(self, x):    #  function  (can be any other function, model or diff neural network models (FNN or RNN ))
 		fit = 0.0
 		if self.problem == 1: # rosenbrock
 			for j in range(x.size -1):
@@ -243,10 +248,12 @@ class neuroevolution(object):  # class for fitness func
 
 
 
-class evolution(neuroevolution):
+class evolution(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 
 	def __init__(self, pop_size, dimen, max_evals,  max_limits, min_limits, netw, traindata, testdata):
-		super().__init__( netw, traindata, testdata) # inherits neural network class definition as well
-		self.EPSILON = 1e-40  # convergence
+		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
+
+
+		self.EPSILON = 1e-40  # convergence - not needed in this case
 		self.sigma_eta = 0.1
 		self.sigma_zeta = 0.1
 		self.children = 2
@@ -300,10 +307,10 @@ class evolution(neuroevolution):
 
  
 
-		self.fitness[0] = self.fit_func(self.population[0,:])
+		self.fitness[0] = self.fit_func(self.population[0,:])  # this inherits method from neuroevolution class
 		self.best_fit = self.fitness[0]
 		for i in range(self.pop_size):
-			self.fitness[i] = self.fit_func(self.population[i,:])
+			self.fitness[i] = self.fit_func(self.population[i,:]) 
 			if (self.best_fit> self.fitness[i]):
 				self.best_fit =  self.fitness[i]
 				self.best_index = i
@@ -512,127 +519,108 @@ class evolution(neuroevolution):
 
 
 
+#############################################################################################################
 
-
-
-
-
-
-
-'''def show_vector(vector):
-  for i in range(len(vector)):
-	if i % 8 == 0: # 8 columns
-	  print("\n", end="")
-	if vector[i] >= 0.0:
-	  print(' ', end="")
-	print("%.4f" % vector[i], end="") # 4 decimals
-	print(" ", end="")
-  print("\n")
-
-def error(position):
-  err = 0.0
-  for i in range(len(position)):
-	xi = position[i]
-	err += (xi * xi) - (10 * math.cos(2 * math.pi * xi)) + 10
-  return err
-
-# ------------------------------------
-
-class Particle:
-  def __init__(self, dim, minx, maxx, seed):
-	self.rnd = random.Random(seed)
-	self.position = [0.0 for i in range(dim)]
-	self.velocity = [0.0 for i in range(dim)]
-	self.best_part_pos = [0.0 for i in range(dim)]
-
-	for i in range(dim):
-	  self.position[i] = ((maxx - minx) *
-		self.rnd.random() + minx)
-	  self.velocity[i] = ((maxx - minx) *
-		self.rnd.random() + minx)
-
-	self.error = error(self.position) # curr error
-	self.best_part_pos = copy.copy(self.position) 
-	self.best_part_err = self.error # best error
-
-
-
-
-
-
-def Solve(max_epochs, n, dim, minx, maxx):
-  rnd = random.Random(0)
-
-  # create n random particles
-  swarm = [Particle(dim, minx, maxx, i) for i in range(n)] 
-
-  best_swarm_pos = [0.0 for i in range(dim)] # not necess.
-  best_swarm_err = sys.float_info.max # swarm best
-  for i in range(n): # check each particle
-	if swarm[i].error < best_swarm_err:
-	  best_swarm_err = swarm[i].error
-	  best_swarm_pos = copy.copy(swarm[i].position) 
-
-  epoch = 0
-  w = 0.729    # inertia
-  c1 = 1.49445 # cognitive (particle)
-  c2 = 1.49445 # social (swarm)
-
-  while epoch < max_epochs:
-	
-	if epoch % 10 == 0 and epoch > 1:
-	  print("Epoch = " + str(epoch) +
-		" best error = %.3f" % best_swarm_err)
-
-	for i in range(n): # process each particle
-	  
-	  # compute new velocity of curr particle
-	  for k in range(dim): 
-		r1 = rnd.random()    # randomizations
-		r2 = rnd.random()
-	
-		swarm[i].velocity[k] = ( (w * swarm[i].velocity[k]) +
-		  (c1 * r1 * (swarm[i].best_part_pos[k] -
-		  swarm[i].position[k])) +  
-		  (c2 * r2 * (best_swarm_pos[k] -
-		  swarm[i].position[k])) )  
-
-		if swarm[i].velocity[k] < minx:
-		  swarm[i].velocity[k] = minx
-		elif swarm[i].velocity[k] > maxx:
-		  swarm[i].velocity[k] = maxx
-
-	  # compute new position using new velocity
-	  for k in range(dim): 
-		swarm[i].position[k] += swarm[i].velocity[k]
-  
-	  # compute error of new position
-	  swarm[i].error = error(swarm[i].position)
-
-	  # is new position a new best for the particle?
-	  if swarm[i].error < swarm[i].best_part_err:
-		swarm[i].best_part_err = swarm[i].error
-		swarm[i].best_part_pos = copy.copy(swarm[i].position)
-
-	  # is new position a new best overall?
-	  if swarm[i].error < best_swarm_err:
-		best_swarm_err = swarm[i].error
-		best_swarm_pos = copy.copy(swarm[i].position)
-	
-	# for-each particle
-	epoch += 1
-  # while
-  return best_swarm_pos
  
 
-			  
-		print(err_best_g, ' fitness')
+class Particle(neuroevolution):
+	def __init__(self,  dim,  maxx, minx, netw, traindata, testdata):
+		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
+
+		self.position = ((maxx - minx) * np.random.rand(dim)  + minx)
+		self.velocity = ((maxx - minx) * np.random.rand(dim)  + minx)
+
+		self.error = self.fit_func(self.position) # curr error
+		self.best_part_pos =  self.position.copy()
+		self.best_part_err = self.error # best error 
 
 
-		train_per, rmse_train = self.classification_perf(pos_best_g, 'train')
-		test_per, rmse_test = self.classification_perf(self.population[self.best_index], 'test')
 
-		return train_per, test_per, rmse_train, rmse_test'''
+class pso(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002 
+	def __init__(self, pop_size, dimen, max_evals,  max_limits, min_limits, netw, traindata, testdata):
+		super().__init__( netw, traindata, testdata) # inherits neuroevolution class definition and methods
+
+		self.dim = dimen
+		self.n = pop_size
+		self.minx = min_limits
+		self.maxx = max_limits
+		self.max_epochs = max_evals
+
+		self.netw = netw
+		self.traindata = traindata
+		self.testdata = testdata
+
+
+
+	def evolvePSO(self):
+
+
+		rnd = random.Random(0)
+		# create n random particles 
+
+		swarm = [Particle(self.dim, self.minx, self.maxx,  self.netw, self.traindata, self.testdata) for i in range(self.n)] 
+	 
+		best_swarm_pos = [0.0 for i in range(self.dim)] # not necess.
+		best_swarm_err = sys.float_info.max # swarm best
+
+
+	
+		for i in range(self.n): # check each particle
+ 
+			if swarm[i].error < best_swarm_err:
+				best_swarm_err = swarm[i].error
+				best_swarm_pos = copy.copy(swarm[i].position) 
+			
+		epoch = 0
+		w = 0.729    # inertia
+		c1 = 1.49445 # cognitive (particle)
+		c2 = 1.49445 # social (swarm)
+
+		while epoch < self.max_epochs:
+
+			
+			for i in range(self.n): # process each particle 
+				r1 = np.random.rand(self.dim)
+				r2 = np.random.rand(self.dim)
+
+				swarm[i].velocity = ( (w * swarm[i].velocity) + (c1 * r1 * (swarm[i].best_part_pos - swarm[i].position)) +  (c2 * r2 * (best_swarm_pos - swarm[i].position)) )  
+
+				for k in range(self.dim): 
+					if swarm[i].velocity[k] < self.minx[k]:
+						swarm[i].velocity[k] = self.minx[k]
+					elif swarm[i].velocity[k] > self.maxx[k]:
+						swarm[i].velocity[k] = self.maxx[k]
+ 
+				swarm[i].position += swarm[i].velocity
+
+				swarm[i].error = self.fit_func(swarm[i].position)
+
+				if swarm[i].error < swarm[i].best_part_err:
+					swarm[i].best_part_err = swarm[i].error
+					swarm[i].best_part_pos = copy.copy(swarm[i].position)
+
+				if swarm[i].error < best_swarm_err:
+					best_swarm_err = swarm[i].error
+					best_swarm_pos = copy.copy(swarm[i].position)
+
+			if epoch % 10 == 0 and epoch > 1:
+				print("Epoch = " + str(epoch) + " best error = %.7f" % best_swarm_err)
+
+				train_per, rmse_train = self.classification_perf(best_swarm_pos, 'train')
+				test_per, rmse_test = self.classification_perf(best_swarm_pos, 'test')
+
+				print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
+				print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
+
+
+
+			epoch += 1
+ 
+
+		train_per, rmse_train = self.classification_perf(best_swarm_pos, 'train')
+		test_per, rmse_test = self.classification_perf(best_swarm_pos, 'test')
+
+		return train_per, test_per, rmse_train, rmse_test
 
 
 
@@ -643,7 +631,7 @@ def Solve(max_epochs, n, dim, minx, maxx):
 def main():
 
 
-	problem = 3
+	problem = 4
 
 
 	separate_flag = False # dont change 
@@ -768,7 +756,7 @@ def main():
  
  
 	random.seed(time.time())
-	max_evals = 10000
+	max_evals = 50000 
 	pop_size =  100
 	num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
 	max_limits = np.repeat(50, num_varibles) 
@@ -779,32 +767,22 @@ def main():
 	 
 	train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX(outfile)
 
-	print(train_per , rmse_train,  'classification_perf RMSE train *' )   
-	print(test_per ,  rmse_test, 'classification_perf  RMSE test *' )
+	print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
+	print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
 
+
+	max_gens = 1000
+	pop_size =  50
 
  
-
-
-	'''psonn  = pso(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
-
-	#train_per, test_per, rmse_train, rmse_test = rga.evolve(outfile)
-
+	psonn  = pso(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
+ 
 	train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
 
-	print(train_per , rmse_train,  'classification_perf RMSE train *' )   
-	print(test_per ,  rmse_test, 'classification_perf  RMSE test *' )'''
+	print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
+	print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
 
-
-
-
-
-'''initial=[5,5,5,5,5]               # initial starting location [x1,x2...]
-bounds=[(-10,10),(-10,10),(-10,10),(-10,10),(-10,10)]  # input bounds [(x1_min,x1_max),(x2_min,x2_max)...]
-PSO(func1,initial,bounds,num_particles=100,maxiter=25000)'''
-
-
-
+ 
 
 
  
