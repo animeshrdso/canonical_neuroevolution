@@ -622,158 +622,174 @@ class evolutionPSO(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 def main():
 
 
-	problem = 7
+	#problem = 8
+
+	for problem in range(3, 9) : 
 
 
-	separate_flag = False # dont change 
+		separate_flag = False # dont change 
 
 
-	if problem == 1: #Wine Quality White
-		data  = np.genfromtxt('DATA/winequality-red.csv',delimiter=';')
-		data = data[1:,:] #remove Labels
-		classes = data[:,11].reshape(data.shape[0],1)
-		features = data[:,0:11]
-		separate_flag = True
-		name = "winequality-red"
-		hidden = 50
-		ip = 11 #input
-		output = 10 
-	if problem == 3: #IRIS
-		data  = np.genfromtxt('DATA/iris.csv',delimiter=';')
-		classes = data[:,4].reshape(data.shape[0],1)-1
-		features = data[:,0:4]
+		if problem == 1: #Wine Quality White
+			data  = np.genfromtxt('DATA/winequality-red.csv',delimiter=';')
+			data = data[1:,:] #remove Labels
+			classes = data[:,11].reshape(data.shape[0],1)
+			features = data[:,0:11]
+			separate_flag = True
+			name = "winequality-red"
+			hidden = 50
+			ip = 11 #input
+			output = 10 
+		if problem == 3: #IRIS
+			data  = np.genfromtxt('DATA/iris.csv',delimiter=';')
+			classes = data[:,4].reshape(data.shape[0],1)-1
+			features = data[:,0:4]
 
-		separate_flag = True
-		name = "iris"
-		hidden = 8  #12
-		ip = 4 #input
-		output = 3 
-		#NumSample = 50000
-	if problem == 2: #Wine Quality White
-		data  = np.genfromtxt('DATA/winequality-white.csv',delimiter=';')
-		data = data[1:,:] #remove Labels
-		classes = data[:,11].reshape(data.shape[0],1)
-		features = data[:,0:11]
-		separate_flag = True
-		name = "winequality-white"
-		hidden = 50
-		ip = 11 #input
-		output = 10 
-		#NumSample = 50000
-	if problem == 4: #Ionosphere
-		traindata = np.genfromtxt('DATA/Ions/Ions/ftrain.csv',delimiter=',')[:,:-1]
-		testdata = np.genfromtxt('DATA/Ions/Ions/ftest.csv',delimiter=',')[:,:-1]
-		name = "Ionosphere"
-		hidden = 15 #50
-		ip = 34 #input
-		output = 2 
+			separate_flag = True
+			name = "iris"
+			hidden = 8  #12
+			ip = 4 #input
+			output = 3 
+			#NumSample = 50000
+		if problem == 2: #Wine Quality White
+			data  = np.genfromtxt('DATA/winequality-white.csv',delimiter=';')
+			data = data[1:,:] #remove Labels
+			classes = data[:,11].reshape(data.shape[0],1)
+			features = data[:,0:11]
+			separate_flag = True
+			name = "winequality-white"
+			hidden = 50
+			ip = 11 #input
+			output = 10 
+			#NumSample = 50000
+		if problem == 4: #Ionosphere
+			traindata = np.genfromtxt('DATA/Ions/Ions/ftrain.csv',delimiter=',')[:,:-1]
+			testdata = np.genfromtxt('DATA/Ions/Ions/ftest.csv',delimiter=',')[:,:-1]
+			name = "Ionosphere"
+			hidden = 15 #50
+			ip = 34 #input
+			output = 2 
 
-		#NumSample = 50000
-	if problem == 5: #Cancer
-		traindata = np.genfromtxt('DATA/Cancer/ftrain.txt',delimiter=' ')[:,:-1]
-		testdata = np.genfromtxt('DATA/Cancer/ftest.txt',delimiter=' ')[:,:-1]
-		name = "Cancer"
-		hidden = 8 # 12
-		ip = 9 #input
-		output = 2 
-		#NumSample =  50000
+			#NumSample = 50000
+		if problem == 5: #Cancer
+			traindata = np.genfromtxt('DATA/Cancer/ftrain.txt',delimiter=' ')[:,:-1]
+			testdata = np.genfromtxt('DATA/Cancer/ftest.txt',delimiter=' ')[:,:-1]
+			name = "Cancer"
+			hidden = 8 # 12
+			ip = 9 #input
+			output = 2 
+			#NumSample =  50000
 
-		# print(' cancer')
+			# print(' cancer')
 
-	if problem == 6: #Bank additional
-		data = np.genfromtxt('DATA/Bank/bank-processed.csv',delimiter=';')
-		classes = data[:,20].reshape(data.shape[0],1)
-		features = data[:,0:20]
-		separate_flag = True
-		name = "bank-additional"
-		hidden = 50
-		ip = 20 #input
-		output = 2 
-		#NumSample = 50000
-	if problem == 7: #PenDigit
-		traindata = np.genfromtxt('DATA/PenDigit/train.csv',delimiter=',')
-		testdata = np.genfromtxt('DATA/PenDigit/test.csv',delimiter=',')
-		name = "PenDigit"
-		for k in range(16):
-			mean_train = np.mean(traindata[:,k])
-			dev_train = np.std(traindata[:,k])
-			traindata[:,k] = (traindata[:,k]-mean_train)/dev_train
-			mean_test = np.mean(testdata[:,k])
-			dev_test = np.std(testdata[:,k])
-			testdata[:,k] = (testdata[:,k]-mean_test)/dev_test
-		ip = 16
-		hidden = 30
-		output = 10 
+		if problem == 6: #Bank additional
+			data = np.genfromtxt('DATA/Bank/bank-processed.csv',delimiter=';')
+			classes = data[:,20].reshape(data.shape[0],1)
+			features = data[:,0:20]
+			separate_flag = True
+			name = "bank-additional"
+			hidden = 50
+			ip = 20 #input
+			output = 2 
+			#NumSample = 50000
+		if problem == 7: #PenDigit
+			traindata = np.genfromtxt('DATA/PenDigit/train.csv',delimiter=',')
+			testdata = np.genfromtxt('DATA/PenDigit/test.csv',delimiter=',')
+			name = "PenDigit"
+			for k in range(16):
+				mean_train = np.mean(traindata[:,k])
+				dev_train = np.std(traindata[:,k])
+				traindata[:,k] = (traindata[:,k]-mean_train)/dev_train
+				mean_test = np.mean(testdata[:,k])
+				dev_test = np.std(testdata[:,k])
+				testdata[:,k] = (testdata[:,k]-mean_test)/dev_test
+			ip = 16
+			hidden = 30
+			output = 10 
 
-		#NumSample = 50000
-	if problem == 8: #Chess
-		data  = np.genfromtxt('DATA/chess.csv',delimiter=';')
-		classes = data[:,6].reshape(data.shape[0],1)
-		features = data[:,0:6]
-		separate_flag = True
-		name = "chess"
-		hidden = 25
-		ip = 6 #input
-		output = 18 
-
-
-	
-	#Separating data to train and test
-	if separate_flag is True:
-		#Normalizing Data
-		for k in range(ip):
-			mean = np.mean(features[:,k])
-			dev = np.std(features[:,k])
-			features[:,k] = (features[:,k]-mean)/dev
-		train_ratio = 0.6 #Choosable
-		indices = np.random.permutation(features.shape[0])
-		traindata = np.hstack([features[indices[:np.int(train_ratio*features.shape[0])],:],classes[indices[:np.int(train_ratio*features.shape[0])],:]])
-		testdata = np.hstack([features[indices[np.int(train_ratio*features.shape[0])]:,:],classes[indices[np.int(train_ratio*features.shape[0])]:,:]])
+			#NumSample = 50000
+		if problem == 8: #Chess
+			data  = np.genfromtxt('DATA/chess.csv',delimiter=';')
+			classes = data[:,6].reshape(data.shape[0],1)
+			features = data[:,0:6]
+			separate_flag = True
+			name = "chess"
+			hidden = 25
+			ip = 6 #input
+			output = 18 
 
 
-
-	topology = [ip, hidden, output]
-
-	# print(topology, ' topology')
-
-	netw = topology
-
-
-	y_test =  testdata[:,netw[0]]
-	y_train =  traindata[:,netw[0]]
-
-
-	outfile=open('results.txt','w')
- 
- 
-	random.seed(time.time())
-	max_evals = 10000 
-	pop_size =  100
-	num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
-	max_limits = np.repeat(50, num_varibles) 
-	min_limits = np.repeat(-50, num_varibles)
+		
+		#Separating data to train and test
+		if separate_flag is True:
+			#Normalizing Data
+			for k in range(ip):
+				mean = np.mean(features[:,k])
+				dev = np.std(features[:,k])
+				features[:,k] = (features[:,k]-mean)/dev
+			train_ratio = 0.6 #Choosable
+			indices = np.random.permutation(features.shape[0])
+			traindata = np.hstack([features[indices[:np.int(train_ratio*features.shape[0])],:],classes[indices[:np.int(train_ratio*features.shape[0])],:]])
+			testdata = np.hstack([features[indices[np.int(train_ratio*features.shape[0])]:,:],classes[indices[np.int(train_ratio*features.shape[0])]:,:]])
 
 
-	g3pcx  = evolutionRCGA(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
+
+		topology = [ip, hidden, output]
+
+		# print(topology, ' topology')
+
+		netw = topology
+
+
+		y_test =  testdata[:,netw[0]]
+		y_train =  traindata[:,netw[0]]
+
+
+		outfile_ga=open('resultsga.txt','a+')
+
+		outfile_pso=open('resultspso.txt','a+')
+
+
+		for run in range(1, 6) :  
+			
+			random.seed(time.time())
+			max_evals = 10000 
+			pop_size =  100
+			num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
+			max_limits = np.repeat(50, num_varibles) 
+			min_limits = np.repeat(-50, num_varibles)
+
+
+			g3pcx  = evolutionRCGA(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
+			 
+			train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX()
+
+			print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
+			print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
+
+			allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test]) 
+			np.savetxt(outfile_ga,  allres   , fmt='%1.4f', newline=' '  )
+   
+
+
+			max_gens = 100
+			pop_size =  100
+
+		 
+			psonn  =  evolutionPSO(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
+		 
+			train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
+
+			print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
+			print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
+
+
+			allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test]) 
+			np.savetxt(outfile_pso,  allres   , fmt='%1.4f', newline=' '  )
+
+
+
 	 
-	train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX()
-
-	print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
-	print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
-
-
-	max_gens = 100
-	pop_size =  100
-
- 
-	psonn  =  evolutionPSO(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
- 
-	train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
-
-	print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
-	print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
-
- 
 
 
  
