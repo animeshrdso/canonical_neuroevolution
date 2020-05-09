@@ -232,6 +232,14 @@ class neuroevolution(object):  # class for fitness func
 
 
 
+	def neuro_gradient(self, data, w, depth):  # BP with SGD (Stocastic BP)
+
+		gradients = self.neural_net.langevin_gradient(data, w, depth)
+
+		return gradients
+
+
+
 
 
 
@@ -567,6 +575,15 @@ class evolutionPSO(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
 		c1 = 1.49445 # cognitive (particle)
 		c2 = 1.49445 # social (swarm)
 
+		gradient_prob =0.5
+
+		depth = 1 # num of epochs for gradients by backprop
+
+		use_gradients = True
+
+
+
+
 		while epoch < self.max_epochs:
 
 			
@@ -584,6 +601,13 @@ class evolutionPSO(neuroevolution):  #G3-PCX Evolutionary Alg by K Deb - 2002
  
 				swarm[i].position += swarm[i].velocity
 
+				u = random.uniform(0, 1)
+
+				if u < gradient_prob and use_gradients == True: 
+
+					swarm[i].position = self.neuro_gradient(self.traindata, swarm[i].position.copy(), depth)  
+					
+ 
 				swarm[i].error = self.fit_func(swarm[i].position)
 
 				if swarm[i].error < swarm[i].best_part_err:
@@ -624,7 +648,9 @@ def main():
 
 	#problem = 8
 
-	for problem in range(3, 9) : 
+	method = 'pso'    # or 'rcga'
+
+	for problem in range(5, 9) : 
 
 
 		separate_flag = False # dont change 
@@ -734,58 +760,75 @@ def main():
 
 
 
-		topology = [ip, hidden, output]
-
-		# print(topology, ' topology')
+		topology = [ip, hidden, output] 
 
 		netw = topology
-
-
 		y_test =  testdata[:,netw[0]]
 		y_train =  traindata[:,netw[0]]
 
 
 		outfile_ga=open('resultsga.txt','a+')
-
 		outfile_pso=open('resultspso.txt','a+')
 
 
-		for run in range(1, 6) :  
-			
-			random.seed(time.time())
-			max_evals = 10000 
-			pop_size =  100
-			num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
-			max_limits = np.repeat(50, num_varibles) 
-			min_limits = np.repeat(-50, num_varibles)
+		num_varibles = (netw[0] * netw[1]) + (netw[1] * netw[2]) + netw[1] + netw[2]  # num of weights and bias
+		max_limits = np.repeat(50, num_varibles) 
+		min_limits = np.repeat(-50, num_varibles)
 
 
-			g3pcx  = evolutionRCGA(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
-			 
-			train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX()
 
-			print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
-			print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
+		for run in range(1, 2) :  
 
-			allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test]) 
-			np.savetxt(outfile_ga,  allres   , fmt='%1.4f', newline=' '  )
+			if method == 'pso':
+
+	 
+				max_gens = 50
+				pop_size =  100
+
+				timer = time.time()
+
+				psonn  =  evolutionPSO(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
+
+				train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
+
+				print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
+				print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
+
+				timer2 = time.time()
+				timetotal = (timer2 - timer) /60
+
+
+				allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test, timetotal]) 
+				np.savetxt(outfile_pso,  allres   , fmt='%1.4f', newline='   '  )
+				np.savetxt(outfile_pso,  ['  PSO'], fmt="%s", newline=' \n '  )
+
+			else:
+
+
+				timer = time.time() 
+
+				random.seed(time.time())
+				max_evals = 5000
+				pop_size =  100 
+
+				g3pcx  = evolutionRCGA(pop_size, num_varibles, max_evals,  max_limits, min_limits, netw, traindata, testdata)
+				 
+				train_per, test_per, rmse_train, rmse_test = g3pcx.evolveG3PCX()
+
+				print(train_per , rmse_train,  'classification_perf RMSE train * RCGA' )   
+				print(test_per ,  rmse_test, 'classification_perf  RMSE test * RCGA' )
+
+				timer2 = time.time()
+				timetotal = (timer2 - timer) /60
+
+				allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test, timetotal]) 
+				np.savetxt(outfile_ga,  allres   , fmt='%1.2f', newline=' '  )
+				np.savetxt(outfile_ga, ['  RCGA'], fmt="%s", newline=' \n '  ) 
+
+
+
    
-
-
-			max_gens = 100
-			pop_size =  100
-
-		 
-			psonn  =  evolutionPSO(pop_size, num_varibles, max_gens,  max_limits, min_limits, netw, traindata, testdata)
-		 
-			train_per, test_per, rmse_train, rmse_test = psonn.evolvePSO()
-
-			print(train_per , rmse_train,  'classification_perf RMSE train * pso' )   
-			print(test_per ,  rmse_test, 'classification_perf  RMSE test * pso' )
-
-
-			allres =  np.asarray([ problem, run, train_per, test_per, rmse_train, rmse_test]) 
-			np.savetxt(outfile_pso,  allres   , fmt='%1.4f', newline=' '  )
+   
 
 
 
